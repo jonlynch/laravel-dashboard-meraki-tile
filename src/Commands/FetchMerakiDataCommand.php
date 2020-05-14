@@ -19,11 +19,11 @@ class FetchMerakiDataCommand extends Command
         $meraki = new Meraki(config('dashboard.tiles.meraki.api_key'),
             config('dashboard.tiles.meraki.organisation_id'));
         $deviceStatus = $meraki->getDeviceData();
+        $status['devices'] = $deviceStatus;
 
-        dd($deviceStatus);
-        
         $devices = collect($deviceStatus);
 
+        $clients = [];
         // for each 
         foreach (config('dashboard.tiles.meraki.configurations') as $deviceConfig) {
             // lookup the networkId from the deviceStatuses
@@ -32,28 +32,14 @@ class FetchMerakiDataCommand extends Command
             });
             $networkId = $device['networkId'];
             // Call to fetch client data
-            $clientStatus = Meraki::getClientData(
-                config('dashboard.tiles.meraki.api_key'),
+            $clientStatus = $meraki->getClientData(
                 $deviceConfig['clients'], 
                 $networkId
             );
-            dd($clientStatus);
-
-            // add on display name before storing
-            // produce pretty output
+            $clients[] = $clientStatus;
         }
-
-        $clientStatus = Meraki::getClientData(
-            config('dashboard.tiles.meraki.api_key'),
-            ['00:0e:06:00:54:0d', '00:0e:06:00:54:08'], 
-            'N_682858293500074852'
-        );
-        /*
-        // fetch the client status
-        foreach ($clients as $client) {
-            $clientData = Meraki::getClientData($clientMac, $networkId);
-        }*/
-        $status = [];
+        $status['clients'] = $clientStatus;
+        
         // store in a structure suitable for displaying
         MerakiStore::make()->setStatus($status);
         

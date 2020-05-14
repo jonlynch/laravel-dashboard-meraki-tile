@@ -49,22 +49,38 @@ class Meraki
             ->toArray();
             */
     }
-    public function getClientData(array $clients, string $network_id): array
+    public function getClientData(array $clients_required, string $network_id): array
     {
-        $clientEndpoint = "https://api.meraki.com/api/v0/networks/{$network_id}/clients";
+        $client_endpoint = "https://api.meraki.com/api/v0/networks/{$network_id}/clients";
         $headers = [
             "X-Cisco-Meraki-API-Key" => $this->api_key
         ];
-        $response = Http::withHeaders($headers)
-            ->get($clientEndpoint)
+        $clients_returned = Http::withHeaders($headers)
+            ->get($client_endpoint)
             ->json();
 
+        $required_macs = collect($clients_required)->pluck('mac')->toArray();
+
+        $clients_filtered = collect($clients_returned)->filter(function ($client) use ($required_macs) {
+            return in_array($client['mac'], ($required_macs)) ;
+        });
+        
+        $clients_to_return = [];
+        
+        foreach ($clients_required as $client) {
+            $client_data = $clients_filtered
+                ->first(fn ($returned_client)=> $returned_client['mac'] === $client['mac']);
+            $client['status'] = $client_data['status'];
+            $client['last_seen'] = $client_data['lastSeen'];
+            $client['device_name'] = $client_data['recentDeviceName'];
+            unset($client['mac']);
+            $clients_to_return[] = $client;
+        }
         // To Do
-        // Filter by mac address
         // Extract necessary information
         // Add display name
 
-        return $response;
+        return $clients_to_return;
 
     }
 
