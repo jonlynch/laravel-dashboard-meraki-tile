@@ -15,33 +15,28 @@ class FetchMerakiDataCommand extends Command
     public function handle()
     {
         $this->info('Fetching Meraki Data ...');
-        // fetch the device status 
-        $meraki = new Meraki(config('dashboard.tiles.meraki.api_key'),
-            config('dashboard.tiles.meraki.organisation_id'));
-        $deviceStatus = $meraki->getDeviceData();
-        $status['devices'] = $deviceStatus;
-
-        $devices = collect($deviceStatus);
-
-        $clients = [];
-        // for each 
-        foreach (config('dashboard.tiles.meraki.configurations') as $deviceConfig) {
-            // lookup the networkId from the deviceStatuses
-            $device = $devices->first( function ($device) use ($deviceConfig) {
-                return $device['name'] === $deviceConfig['device_name'];
-            });
-            $networkId = $device['networkId'];
-            // Call to fetch client data
-            $clientStatus = $meraki->getClientData(
-                $deviceConfig['clients'], 
-                $networkId
-            );
-            $clients[] = $clientStatus;
-        }
-        $status['clients'] = $clientStatus;
         
-        // store in a structure suitable for displaying
-        MerakiStore::make()->setStatus($status);
+        $meraki = new Meraki(
+            config('dashboard.tiles.meraki.api_key'),
+            config('dashboard.tiles.meraki.organisation_id')
+        );
+
+        // fetch the device status 
+        $devices = $meraki->getDeviceData(config('dashboard.tiles.meraki.configurations'));
+        
+        $populated_devices = [];
+        
+        // get the client status for each device
+        foreach ($devices as $device) {
+            $clientStatus = $meraki->getClientData(
+                $device['clients'], 
+                $device['networkId']
+            );
+            $device['clients'] = $clientStatus;
+            $populated_devices[] = $device;
+        }
+
+        MerakiStore::make()->setStatus($populated_devices);
         
         $this->info('All done!');
     }

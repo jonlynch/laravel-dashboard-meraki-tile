@@ -15,40 +15,35 @@ class Meraki
         $this->org_id = $org_id;
     }
 
-    public function getDeviceData(): array
+    public function getDeviceData(array $devices_required): array
     {
         $deviceEndpoint = "https://api.meraki.com/api/v0/organizations/" . $this->org_id . "/deviceStatuses";
         $headers = [
             "X-Cisco-Meraki-API-Key" => $this->api_key
         ];
 
-        $response = Http::withHeaders($headers)
+        $required_names = collect($devices_required)->pluck('device_name')->toArray();
+
+        $all_devices = Http::withHeaders($headers)
             ->get($deviceEndpoint)
             ->json();
+        
+        $devices_filtered = collect($all_devices) 
+            ->filter(fn ($device) => in_array($device['name'] ?? 'zz', ($required_names)));
 
-        return $response;
-        /*
-        return collect($response['features'][0]['properties']['timeSeries'])
-            ->map(function (array $forecast) {
-                return [
-                    'time' => $forecast['time'],
-                    'temp' => $forecast['screenTemperature'],
-                    'windSpeed' => $forecast['windSpeed10m'],
-                    'windGust' => $forecast['max10mWindGust'] ?? '',
-                    'windDir' => $forecast['windDirectionFrom10m'],
-                    'feelsLike' => $forecast['feelsLikeTemperature'],
-                    'probOfPrecip' => $forecast['probOfPrecipitation'],
-                    'precipRate' => $forecast['precipitationRate'],
-                ];
-            })
-            ->filter(function ($forecast){
-                return Carbon::now() < Carbon::createFromTimeStamp(strtotime($forecast['time']))
-                                    ->setTimezone('Europe/London');
-            })
-            ->take(24)
-            ->toArray();
-            */
+        $devices_to_return = [];
+        foreach ($devices_required as $device) {
+            $device_data = $devices_filtered
+                ->first(fn ($returned_device)=> $returned_device['name'] === $device['device_name']);
+            $device['status'] = $device_data['status'];
+            $device['last_seen'] = $device_data['lastReportedAt'];
+            $device['networkId'] = $device_data['networkId'];
+            $devices_to_return[] = $device;
+        }
+        
+        return $devices_to_return;
     }
+
     public function getClientData(array $clients_required, string $network_id): array
     {
         $client_endpoint = "https://api.meraki.com/api/v0/networks/{$network_id}/clients";
@@ -59,11 +54,12 @@ class Meraki
             ->get($client_endpoint)
             ->json();
 
-        $required_macs = collect($clients_required)->pluck('mac')->toArray();
+        $required_macs = collect($clients_required)
+            ->pluck('mac')
+            ->toArray();
 
-        $clients_filtered = collect($clients_returned)->filter(function ($client) use ($required_macs) {
-            return in_array($client['mac'], ($required_macs)) ;
-        });
+        $clients_filtered = collect($clients_returned)
+            ->filter(fn ($client) => in_array($client['mac'], $required_macs));
         
         $clients_to_return = [];
         
@@ -76,13 +72,8 @@ class Meraki
             unset($client['mac']);
             $clients_to_return[] = $client;
         }
-        // To Do
-        // Extract necessary information
-        // Add display name
-
+        
         return $clients_to_return;
-
     }
-
-
 }
+
