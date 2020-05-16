@@ -1,10 +1,9 @@
 # A short description of the tile
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/jonlynch/laravel-dashboard-uk-weather-tile.svg?style=flat-square)](https://packagist.org/packages/jonlynch/laravel-dashboard-uk-weather-tile)
-[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/jonlynch/laravel-dashboard-uk-weather-tile/run-tests?label=tests)](https://github.com/jonlynch/laravel-dashboard-uk-weather-tile/actions?query=workflow%3Arun-tests+branch%3Amaster)
-[![Total Downloads](https://img.shields.io/packagist/dt/jonlynch/laravel-dashboard-uk-weather-tile.svg?style=flat-square)](https://packagist.org/packages/jonlynch/laravel-dashboard-uk-weather-tile)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/jonlynch/laravel-dashboard-meraki-tile.svg?style=flat-square)](https://packagist.org/packages/jonlynch/laravel-dashboard-meraki-tile)
+[![Total Downloads](https://img.shields.io/packagist/dt/jonlynch/laravel-dashboard-meraki-tile.svg?style=flat-square)](https://packagist.org/packages/jonlynch/laravel-dashboard-meraki-tile)
 
-A weather forecast tile powered by [Met Office data](https://metoffice.apiconnect.ibmcloud.com/metoffice/production/).
+A tile to display the status of devices and clients from the Cisco Meraki cloud.
 
 This tile can be used on [the Laravel Dashboard](https://docs.spatie.be/laravel-dashboard).
 
@@ -13,17 +12,16 @@ This tile can be used on [the Laravel Dashboard](https://docs.spatie.be/laravel-
 You can install the package via composer:
 
 ```bash
-$ composer require jonlynch/laravel-dashboard-uk-weather-tile
+$ composer require jonlynch/laravel-dashboard-meraki-tile
 ```
 
 ## Usage
 
-In your dashboard view you use the `livewire:uk-weather-tile` component. You may add more than one weather forecast by adding more locations.
+In your dashboard view you use the `livewire:meraki-tile` component. 
 
 ```html
 <x-dashboard>
-    <livewire:uk-weather-tile position="a1:a2" location-name="St Bees"/>
-    <livewire:uk-weather-tile position="b1:b2" location-name="Scafell Pike"/>
+    <livewire:meraki-tile position="a1:a12" />
 </x-dashboard>
 ```
 
@@ -35,40 +33,35 @@ Add the config to the tiles sections of your `config/dashboard.php`
 return [
     // ...
     tiles => [
-        'ukweather' => [
-            'client_id' => env('MET_OFFICE_CLIENT_ID'),
-            'client_secret' => env('MET_OFFICE_CLIENT_SECRET'),
-            'locations' => [
-                'St Bees' => [
-                    'lat' => '54.4891',
-                    'lon' => '-3.6080',
+         'meraki' => [
+            'api_key' => env('MERAKI_API_KEY'),
+            'organisation_id' => env('MERAKI_ORG_ID'),
+             'configurations' => [ // one for each device you are interested in
+                [
+                    'display_name' => 'Site 1',
+                    'device_name' => 'Site 1', // as used in the Meraki Cloud
+                    'clients' => [ // any clients you would like reported on on that device
+                        [
+                            'display_name' => 'Repeater',
+                            'mac' => '00:0e:06:00:53:f9'
+                        ]
+                    ]
                 ],
-                'Scafell Pike' => [
-                    'lat' => '54.4543',
-                    'lon' => '-3.2115'
-                ]
-            ],
-            'refresh_interval_in_seconds' => 600,
+            ]
         ]
     ]
 ```
 
-In app\Console\Kernel.php you should schedule the JonLynch\UkWeatherTile\Commands\FetchMetOfficeDataCommand to run every 30 minutes.
+In app\Console\Kernel.php you should schedule the JonLynch\MerakiTile\Commands\FetchMerakiDataCommand to run every minute.
 
 ``` php
 // in app\Console\Kernel.php
 
 protected function schedule(Schedule $schedule)
 {
-    $schedule->command(\JonLynch\UkWeatherTile\Commands\FetchMetOfficeDataCommand::class)->everyThirtyMinutes();
+    $schedule->command(\JonLynch\MerakiTile\Commands\FetchMetOfficeDataCommand::class)->everyMinute();
 
 }
-```
-
-## Testing
-
-``` bash
-composer test
 ```
 
 ## Changelog
