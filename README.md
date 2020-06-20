@@ -40,26 +40,27 @@ return [
                 [
                     'display_name' => 'Site 1',
                     'device_name' => 'Site 1', // as used in the Meraki Cloud
-                    'clients' => [ // any clients you would like reported on on that device
-                        [
-                            'display_name' => 'Repeater',
-                            'mac' => '00:0e:06:00:53:f9'
-                        ]
-                    ]
+                    'client' => '00:0e:06:00:22:22',
+                    'radio_link' => true // Add this if there is a radio link instead of Xtend
                 ],
+                [
+                    'display_name' => 'Site 2',
+                    'device_name' => 'Site 2', // as used in the Meraki Cloud
+                    'client' => '00:0e:06:00:11:11',
+                ]
             ]
         ]
     ]
 ```
 
-In app\Console\Kernel.php you should schedule the JonLynch\MerakiTile\Commands\FetchMerakiDataCommand to run every minute.
+In `app\Console\Kernel.php` you should schedule the `JonLynch\MerakiTile\Commands\FetchMerakiDataCommand` to run every minute.
 
 ``` php
 // in app\Console\Kernel.php
 
 protected function schedule(Schedule $schedule)
 {
-    $schedule->command(\JonLynch\MerakiTile\Commands\FetchMetOfficeDataCommand::class)->everyMinute();
+    $schedule->command(\JonLynch\MerakiTile\Commands\FetchMerakiDataCommand::class)->everyMinute();
 
 }
 ```

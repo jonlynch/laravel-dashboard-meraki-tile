@@ -5,6 +5,7 @@ namespace JonLynch\MerakiTile\Commands;
 use Illuminate\Console\Command;
 use JonLynch\MerakiTile\MerakiStore;
 use JonLynch\MerakiTile\Services\Meraki;
+use JonLynch\MerakiTile\Services\Consequences;
 
 class FetchMerakiDataCommand extends Command
 {
@@ -29,13 +30,14 @@ class FetchMerakiDataCommand extends Command
         // get the client status for each device
         foreach ($devices as $device) {
             $clientStatus = $meraki->getClientData(
-                $device['clients'], 
+                $device['client'], 
                 $device['networkId']
             );
-            $device['clients'] = $clientStatus;
+            $device = array_merge ($device, $clientStatus);
+            $consequences = New Consequences($device);
+            $device = $consequences->get_consequence_for_device();
             $populated_devices[] = $device;
         }
-
         MerakiStore::make()->setStatus($populated_devices);
         
         $this->info('All done!');
