@@ -16,6 +16,7 @@
                                 @endif 
                                 <div class="block ml-1 text-dimmed text-xs ">{{$device['message']}}</div>
                             </div>
+                        </div>
                     </div>
                 @endforeach
             </div>
