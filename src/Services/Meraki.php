@@ -19,11 +19,11 @@ class Meraki
     public function getDeviceData(array $devices_required): array
     {
         $deviceEndpoint =
-            "https://api.meraki.com/api/v0/organizations/" .
+            "https://api.meraki.com/api/v1/organizations/" .
             $this->org_id .
-            "/deviceStatuses";
+            "/devices/statuses";
         $headers = [
-            "X-Cisco-Meraki-API-Key" => $this->api_key,
+            "Authorization" => "Bearer " . $this->api_key,
         ];
 
         $required_names = collect($devices_required)
@@ -55,9 +55,9 @@ class Meraki
 
     public function getClientData(string $client_mac, string $network_id): array
     {
-        $client_endpoint = "https://api.meraki.com/api/v0/networks/{$network_id}/clients";
+        $client_endpoint = "https://api.meraki.com/api/v1/networks/{$network_id}/clients?timespan=2678400";
         $headers = [
-            "X-Cisco-Meraki-API-Key" => $this->api_key,
+            "Authorization" => "Bearer " . $this->api_key,
         ];
         $clients_returned = Http::withHeaders($headers)
             ->get($client_endpoint)
