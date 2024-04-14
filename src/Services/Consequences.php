@@ -28,18 +28,18 @@ class Consequences
         $this->device['message'] = 'Network issues affecting GPS traces, voice should work normally';
       } else {
         $this->device['colour'] = 'red';
-        $this->device['message'] = 'Repeater not detected it may be off, network ok. Check power and network connection of repeater.';
+        $this->device['message'] = 'Repeater is off or disconnected.';
       }
     } else {
     // No radio link
     // Any network issues
       if (strtolower($this->device['device_status'])!=='online') {
         $this->device['colour'] = 'red';
-        $this->device['message'] = 'Network Issues: This repeater can\'t connect to other repeaters. Radios will still roam to it, suggest turning off roaming on radios';
+        $this->device['message'] = 'Repeater offline. Turn off roaming in this area';
         
       } else {
         $this->device['colour'] = 'red';
-        $this->device['message'] = 'Repeater not detected it may be off, network ok. Check power and network connection of repeater.';
+        $this->device['message'] = 'Repeater is off or disconnected.';
       }
     }
     return $this->device;
