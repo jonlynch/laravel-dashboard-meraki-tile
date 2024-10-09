@@ -30,7 +30,8 @@ class Consequences
         $this->device['colour'] = 'red';
         $this->device['message'] = 'VPN connected. Repeater is off or disconnected.';
       }
-    } else {
+      return $this->device;
+    } 
     
     // Handle logic when the repeater sleeps
     if (isset($this->device['sleeps']) && $this->device['sleeps']) {
@@ -41,18 +42,18 @@ class Consequences
         $this->device['colour'] = 'yellow';
         $this->device['message'] = 'Repeater is powered off, this is expected when radios are not in use.';
       }
-    }
+      return $this->device;
+    } 
 
     // No radio link and does not sleep
     // Any network issues
-      if (strtolower($this->device['device_status'])!=='online') {
-        $this->device['colour'] = 'red';
-        $this->device['message'] = 'VPN not connected to Internet. Turn off roaming in this area';
-        
-      } else {
-        $this->device['colour'] = 'red';
-        $this->device['message'] = 'VPN connected. Repeater is off or disconnected.';
-      }
+    if (strtolower($this->device['device_status'])!=='online') {
+      $this->device['colour'] = 'red';
+      $this->device['message'] = 'VPN not connected to Internet. Turn off roaming in this area';
+      
+    } else {
+      $this->device['colour'] = 'red';
+      $this->device['message'] = 'VPN connected. Repeater is off or disconnected.';
     }
     return $this->device;
   }
