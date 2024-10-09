@@ -47,6 +47,12 @@ return [
                     'display_name' => 'Site 2',
                     'device_name' => 'Site 2', // as used in the Meraki Cloud
                     'client' => '00:0e:06:00:11:11',
+                ],
+                [
+                    'display_name' => 'Site 3',
+                    'device_name' => 'Site 3', // as used in the Meraki Cloud
+                    'client' => '00:0e:06:00:11:12',
+                    'sleeps' => true // add true if this repeater is expected to power down when not in use
                 ]
             ]
         ]

@@ -28,18 +28,30 @@ class Consequences
         $this->device['message'] = 'Network issues affecting GPS traces, voice should work normally';
       } else {
         $this->device['colour'] = 'red';
-        $this->device['message'] = 'Repeater is off or disconnected.';
+        $this->device['message'] = 'VPN connected. Repeater is off or disconnected.';
       }
     } else {
-    // No radio link
+    
+    // Handle logic when the repeater sleeps
+    if (isset($this->device['sleeps']) && $this->device['sleeps']) {
+      if (strtolower($this->device['device_status'])!=='online') {
+        $this->device['colour'] = 'red';
+        $this->device['message'] = 'VPN not connected to Internet. Turn off roaming in this area';
+      } else {
+        $this->device['colour'] = 'yellow';
+        $this->device['message'] = 'Repeater is powered off, this is expected when radios are not in use.';
+      }
+    }
+
+    // No radio link and does not sleep
     // Any network issues
       if (strtolower($this->device['device_status'])!=='online') {
         $this->device['colour'] = 'red';
-        $this->device['message'] = 'Repeater offline. Turn off roaming in this area';
+        $this->device['message'] = 'VPN not connected to Internet. Turn off roaming in this area';
         
       } else {
         $this->device['colour'] = 'red';
-        $this->device['message'] = 'Repeater is off or disconnected.';
+        $this->device['message'] = 'VPN connected. Repeater is off or disconnected.';
       }
     }
     return $this->device;
